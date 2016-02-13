@@ -3,6 +3,9 @@ var editor_foot = "</textarea>";
 var editor_html = editor_head + editor_foot;
 var element_head = "<div class='row'><div class='col-md-12'>";
 var element_foot = "</div></div>";
+var date_head = '<div class="text-right date"><small>';
+var date_foot = '</small></div>';
+
 var id = 0;
 var entry_db = {};
 
@@ -14,7 +17,8 @@ jQuery.fn.extend({
         var entry_id = parseInt($(this).parent().parent().attr("id"));
         console.log("adding " + entry_id + ": " + content);
         entry_db[entry_id]=content;
-        $(this).replaceWith("<div class='entry'>" +  marked(content)  + "</div>");
+        var date_html = date_head + new Date().toISOString().slice(0,10) + date_foot;
+        $(this).replaceWith("<div class='entry'>" + date_html + marked(content)  + "</div>");
       } else {
         $(this).parent().parent().remove();
       }
