@@ -49,10 +49,15 @@ $(document).ready(function(){
     $(this).markify();
   });
   
-  $("body").on('change keyup paste',"#editor", function() {
+  
+  $("body").on('change keyup paste',"#editor", function(e) {
     var content = $(this).val();
-    if (content.endsWith("\n\n")){
-      $(this).val(content.slice(0,-2));
+    if (e.keyCode == 27) {
+      $(this).blur();
+      $(this).markify();
+    } else if (content.endsWith("\n\n\n")){
+      $(this).val(content.slice(0,-3));
+      $(this).blur();
       $(this).markify();
     }
 });
