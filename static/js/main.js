@@ -39,7 +39,7 @@ $(document).ready(function(){
     $("#editor").focus();
   });
   
-  $("body").on("click", ".entry", function(){
+  $("body").on("dblclick", ".entry", function(){
     $("#plusbutton").hide();
     var entry_id = parseInt($(this).parent().parent().attr("id"));
     $(this).replaceWith(editor_html);
