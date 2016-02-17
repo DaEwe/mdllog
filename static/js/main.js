@@ -10,11 +10,10 @@ var entry_foot = '</div>';
 
 var id = 0;
 var entry_db = {};
+var fb_entries = new Firebase('https://fiery-heat-9174.firebaseio.com/entries');
+var fb_id = new Firebase('https://fiery-heat-9174.firebaseio.com/id');
 
-function store(entry_id, date, content){
-  localStorage.setItem(entry_id, JSON.stringify({"date": date, "content": content}));
-  console.log("storing:" + localStorage.getItem(entry_id));
-}
+
 
 jQuery.fn.extend({
   markify: function(date, content){
@@ -28,8 +27,8 @@ jQuery.fn.extend({
         var entry_id = parseInt($(this).parent().parent().attr("id"));
         var date_html = date_head + date + date_foot;
         $(this).replaceWith(entry_head + date_html + marked(content)  + entry_foot);
-        store(entry_id, date, content);
-        localStorage.setItem("id", id);
+        fb_entries.child(entry_id).set({"date": date, "content": content});
+        fb_id.set(id);
       } else {
         $(this).parent().parent().remove();
         id--;
@@ -40,17 +39,18 @@ jQuery.fn.extend({
 
 
 $(document).ready(function(){
-  id = localStorage.getItem("id");
-  $.each(localStorage, function(key, value){
-    if (key != "id"){
-      var entry = JSON.parse(value);
-      // date_head + entry.date + date_foot+ marked(entry.content
+  
+  fb_id.on("value", function(snapshot){
+    id = snapshot.val();
+  });
+
+  fb_entries.on('child_added', function(snapshot) {
+    var entry = snapshot.val();
+    if ($("#" + snapshot.key()).length === 0){
       var html = element_head + entry_head + date_head + entry.date + date_foot+ marked(entry.content) + entry_foot + element_foot;
-      $("#plusbutton").after(html).next().attr("id", key);
+      $("#plusbutton").after(html).next().attr("id", snapshot.key());
     }
-
-});
-
+  });
   
   $("#plusbutton").click(function(){
     $(this).after(element_head + editor_html + element_foot).next().attr("id", id++);
@@ -60,11 +60,13 @@ $(document).ready(function(){
   
   $("body").on("dblclick", ".entry", function(){
     $("#plusbutton").hide();
-    var entry_id = parseInt($(this).parent().parent().attr("id"));
+    var entry_id = $(this).parent().parent().attr("id");
     $(this).replaceWith(editor_html);
-    var entry = JSON.parse(localStorage.getItem(entry_id));
-    console.log(entry, entry.date);
-    $("#editor").focus().val(entry.content);
+    fb_entries.child(entry_id).once("value", function(snapshot){
+      var entry = snapshot.val();
+      $("#editor").focus().val(entry.content);
+    });
+    
   });
 
 
