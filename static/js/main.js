@@ -40,6 +40,17 @@ jQuery.fn.extend({
 
 $(document).ready(function(){
   
+  $("#conf-button").click(function(){
+    $('#conf-modal').modal();
+  });
+  
+  
+  $("#online-backup-checkbox").click(function(){
+    $("#online-backup-form-element").toggle(this.checked);
+    console.log(this.checked);
+  });
+  
+  
   fb_id.on("value", function(snapshot){
     id = snapshot.val();
   });
