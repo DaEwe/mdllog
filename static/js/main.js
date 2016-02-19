@@ -94,12 +94,6 @@ $(document).ready(function(){
      $("#errordisplay").hide();
   });
   
-  
-  $("#online-backup-checkbox").click(function(){
-    $("#online-backup-form-element").toggle(this.checked);
-    console.log(this.checked);
-  });
-  
   $("#signupbutton").click(function(){
     fb.createUser({
       email    : $("#emailinput").val(),
