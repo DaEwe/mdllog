@@ -8,6 +8,9 @@ var date_foot = '</small></div>';
 var entry_head = '<div class="entry">';
 var entry_foot = '</div>';
 
+var login_button = '<span class="glyphicon glyphicon-log-in" aria-hidden="true">';
+var logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
+
 var id = 0;
 var entry_db = {};
 var fb;
@@ -83,16 +86,20 @@ $(document).ready(function(){
   fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
   fb.onAuth(function(authData){
     if (authData === null) {
+      $("#login-button").html(login_button).off( "click" ).click(function(){
+        $('#conf-modal').modal();
+        $("#errordisplay").hide();
+      });
       //not logged in, local only
     } else {
+      $("#login-button").html(logout_button).off( "click" ).click(function(){
+        fb.unauth();
+        $("#plusbutton").siblings().remove();
+      });
       initialize(authData);
     }
   });
   
-  $("#conf-button").click(function(){
-    $('#conf-modal').modal();
-     $("#errordisplay").hide();
-  });
   
   $("#signupbutton").click(function(){
     fb.createUser({
