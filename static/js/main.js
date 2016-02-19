@@ -10,9 +10,21 @@ var entry_foot = '</div>';
 
 var id = 0;
 var entry_db = {};
+var fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
 var fb_entries = new Firebase('https://fiery-heat-9174.firebaseio.com/entries');
 var fb_id = new Firebase('https://fiery-heat-9174.firebaseio.com/id');
 
+var uid;
+
+var store = function(id, date, content){
+  if (uid === undefined){
+    //store only locally
+  } else {
+    var fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ uid);
+    fb_user.child("entries").child(id).set({"date": date, "content": content});
+    fb_user.child("id").set(id);
+  }
+};
 
 
 jQuery.fn.extend({
@@ -27,8 +39,7 @@ jQuery.fn.extend({
         var entry_id = parseInt($(this).parent().parent().attr("id"));
         var date_html = date_head + date + date_foot;
         $(this).replaceWith(entry_head + date_html + marked(content)  + entry_foot);
-        fb_entries.child(entry_id).set({"date": date, "content": content});
-        fb_id.set(id);
+        store(entry_id, date, content);
       } else {
         $(this).parent().parent().remove();
         id--;
@@ -48,6 +59,35 @@ $(document).ready(function(){
   $("#online-backup-checkbox").click(function(){
     $("#online-backup-form-element").toggle(this.checked);
     console.log(this.checked);
+  });
+  
+  $("#signupbutton").click(function(){
+    fb.createUser({
+      email    : $("#emailinput").val(),
+      password : $("#passwordinput").val()
+    }, function(error, userData) {
+      if (error) {
+        console.log("Error creating user:", error);
+      } else {
+        console.log("Successfully created user account with uid:", userData.uid);
+      }
+    });
+    return false;
+  });
+  
+  $("#loginbutton").click(function(){
+    fb.authWithPassword({
+      email    : $("#emailinput").val(),
+      password : $("#passwordinput").val()
+    }, function(error, authData) {
+      if (error) {
+        console.log("Login Failed!", error);
+      } else {
+        console.log("Authenticated successfully with payload:", authData);
+        uid = authData.uid;
+      }
+    });
+    return false;
   });
   
   
