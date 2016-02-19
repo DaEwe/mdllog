@@ -11,18 +11,26 @@ var entry_foot = '</div>';
 var id = 0;
 var entry_db = {};
 var fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
-var fb_entries = new Firebase('https://fiery-heat-9174.firebaseio.com/entries');
-var fb_id = new Firebase('https://fiery-heat-9174.firebaseio.com/id');
-
-var uid;
+var fb_user;
 
 var store = function(id, date, content){
-  if (uid === undefined){
+  if (fb_user === undefined){
     //store only locally
   } else {
-    var fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ uid);
+    
     fb_user.child("entries").child(id).set({"date": date, "content": content});
     fb_user.child("id").set(id);
+  }
+};
+
+var fill_source = function(id){
+  if (fb_user === undefined){
+    //fetch locally
+  } else {
+   fb_user.child(id).once("value", function(snapshot){
+      var entry = snapshot.val();
+      $("#editor").focus().val(entry.content);
+    });
   }
 };
 
@@ -81,27 +89,33 @@ $(document).ready(function(){
       password : $("#passwordinput").val()
     }, function(error, authData) {
       if (error) {
-        console.log("Login Failed!", error);
+        $("#errordisplay").show().children("div").text(error);
       } else {
         console.log("Authenticated successfully with payload:", authData);
-        uid = authData.uid;
+        fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
+        fb_user.child("id").on("value", function(snapshot){
+          id = snapshot.val();
+        });
+
+        fb_user.child("entries").on('child_added', function(snapshot) {
+          var entry = snapshot.val();
+          if ($("#" + snapshot.key()).length === 0){
+            var html = element_head 
+            + entry_head 
+            + date_head + entry.date + date_foot
+            + marked(entry.content) 
+            + entry_foot 
+            + element_foot;
+            
+            $("#plusbutton").after(html).next().attr("id", snapshot.key());
+          }
+        });
+         $('#conf-modal').modal("hide");
       }
     });
     return false;
   });
   
-  
-  fb_id.on("value", function(snapshot){
-    id = snapshot.val();
-  });
-
-  fb_entries.on('child_added', function(snapshot) {
-    var entry = snapshot.val();
-    if ($("#" + snapshot.key()).length === 0){
-      var html = element_head + entry_head + date_head + entry.date + date_foot+ marked(entry.content) + entry_foot + element_foot;
-      $("#plusbutton").after(html).next().attr("id", snapshot.key());
-    }
-  });
   
   $("#plusbutton").click(function(){
     $(this).after(element_head + editor_html + element_foot).next().attr("id", id++);
@@ -113,11 +127,7 @@ $(document).ready(function(){
     $("#plusbutton").hide();
     var entry_id = $(this).parent().parent().attr("id");
     $(this).replaceWith(editor_html);
-    fb_entries.child(entry_id).once("value", function(snapshot){
-      var entry = snapshot.val();
-      $("#editor").focus().val(entry.content);
-    });
-    
+    fill_source(entry_id);
   });
 
 
