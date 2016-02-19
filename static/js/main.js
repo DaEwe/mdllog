@@ -61,6 +61,7 @@ $(document).ready(function(){
   
   $("#conf-button").click(function(){
     $('#conf-modal').modal();
+     $("#errordisplay").hide();
   });
   
   
@@ -75,9 +76,10 @@ $(document).ready(function(){
       password : $("#passwordinput").val()
     }, function(error, userData) {
       if (error) {
-        console.log("Error creating user:", error);
+       $("#errordisplay").show().children("div").text(error);
       } else {
         console.log("Successfully created user account with uid:", userData.uid);
+        $('#conf-modal').modal("hide");
       }
     });
     return false;
