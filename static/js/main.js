@@ -112,11 +112,13 @@ $(document).ready(function(){
   
   $("#list-button").click(function(){
     $(".entry").each(function(){
-      $(this).html("<h5 class='teaser'>" 
-      + $(this).children(".date").text() 
-      + ": " 
-      + $(this).children(".content").children(':first-child').text().slice(0,20) 
-      + "</h5>");
+      if ($(this).find(".teaser").length === 0){
+        $(this).html("<h5 class='teaser'>" 
+        + $(this).children(".date").text() 
+        + ": " 
+        + $(this).children(".content").children(':first-child').text().slice(0,20) 
+        + "</h5>");
+      }
     });
   });
   
