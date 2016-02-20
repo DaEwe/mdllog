@@ -112,11 +112,23 @@ $(document).ready(function(){
   
   $("#list-button").click(function(){
     $(".entry").each(function(){
-      $(this).html("<h5>" 
+      $(this).html("<h5 class='teaser'>" 
       + $(this).children(".date").text() 
       + ": " 
       + $(this).children(".content").children(':first-child').text().slice(0,20) 
       + "</h5>");
+    });
+  });
+  
+  $("body").on("click", ".teaser", function(){
+    var teaser = $(this);
+    var id = teaser.parents(".row").attr("id");
+    fb_user.child("entries").child(id).once("value", function(snapshot){
+      var entry = snapshot.val();
+      teaser.replaceWith(date_head + entry.date + date_foot
+          + content_head 
+          + marked(entry.content) 
+          + content_foot);
     });
   });
   
