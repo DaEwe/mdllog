@@ -5,6 +5,8 @@ var element_head = '<div class="row"><div class="col-md-12">';
 var element_foot = '</div></div>';
 var date_head = '<div class="text-right date"><small>';
 var date_foot = '</small></div>';
+var content_head = '<div class="content">';
+var content_foot = '</div>';
 var entry_head = '<div class="entry">';
 var entry_foot = '</div>';
 
@@ -51,7 +53,9 @@ var initialize = function(authData){
       var html = element_head 
         + entry_head 
         + date_head + entry.date + date_foot
-        + marked(entry.content) 
+        + content_head
+        + marked(entry.content)
+        + content_foot
         + entry_foot 
         + element_foot;
           
@@ -72,7 +76,12 @@ jQuery.fn.extend({
     if ($.trim(content)!==""){
         var entry_id = parseInt($(this).parent().parent().attr("id"));
         var date_html = date_head + date + date_foot;
-        $(this).replaceWith(entry_head + date_html + marked(content)  + entry_foot);
+        $(this).replaceWith(entry_head 
+          + date_html 
+          + content_head 
+          + marked(content) 
+          + content_foot 
+          + entry_foot);
         store(entry_id, date, content);
       } else {
         $(this).parent().parent().remove();
@@ -83,6 +92,7 @@ jQuery.fn.extend({
 
 
 $(document).ready(function(){
+  
   fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
   fb.onAuth(function(authData){
     if (authData === null) {
@@ -98,6 +108,28 @@ $(document).ready(function(){
       });
       initialize(authData);
     }
+  });
+  
+  $("#list-button").click(function(){
+    $(".entry").each(function(){
+      $(this).html("<h5 class='teaser'>" 
+      + $(this).children(".date").text() 
+      + ": " 
+      + $(this).children(".content").children(':first-child').text().slice(0,20) 
+      + "</h5>");
+    });
+  });
+  
+  $("body").on("click", ".teaser", function(){
+    var teaser = $(this);
+    var id = teaser.parents(".row").attr("id");
+    fb_user.child("entries").child(id).once("value", function(snapshot){
+      var entry = snapshot.val();
+      teaser.replaceWith(date_head + entry.date + date_foot
+          + content_head 
+          + marked(entry.content) 
+          + content_foot);
+    });
   });
   
   
