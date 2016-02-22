@@ -1,7 +1,7 @@
 var editor_head = '<textarea id="editor" class="form-control" rows=8>';
 var editor_foot = '</textarea>';
 var editor_html = editor_head + editor_foot;
-var element_head = '<div class="row"><div class="col-md-12">';
+var element_head = '<div class="row"><div class="col-md-8 col-md-offset-2">';
 var element_foot = '</div></div>';
 var date_head = '<div class="text-right date"><small>';
 var date_foot = '</small></div>';
@@ -120,6 +120,7 @@ $(document).ready(function(){
         + "</h5>");
       }
     });
+    return false;
   });
   
   $("body").on("click", ".teaser", function(){
