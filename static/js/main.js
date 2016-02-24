@@ -29,6 +29,10 @@ var store = function(id, date, content){
   }
 };
 
+var remove = function(id){
+  fb_user.child("entries").child(id).remove();
+};
+
 var fill_source = function(id){
   if (fb_user === undefined){
     //fetch locally
@@ -40,6 +44,31 @@ var fill_source = function(id){
   }
 };
 
+var replace_with_entry = function(dom,id){
+  fb_user.child("entries").child(id).once("value", function(snapshot){
+      var entry = snapshot.val();
+      dom.replaceWith(date_head + entry.date + date_foot
+          + content_head 
+          + marked(entry.content) 
+          + content_foot);
+    });
+};
+
+var add_entry = function(id, content, date){
+  if ($("#" + id).length === 0){
+      var html = element_head 
+        + entry_head 
+        + date_head + date + date_foot
+        + content_head
+        + marked(content)
+        + content_foot
+        + entry_foot 
+        + element_foot;
+          
+      $("#plusbutton").after(html).next().attr("id", id);
+    }
+};
+
 var initialize = function(authData){
   fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
   
@@ -49,18 +78,7 @@ var initialize = function(authData){
 
   fb_user.child("entries").on('child_added', function(snapshot) {
     var entry = snapshot.val();
-    if ($("#" + snapshot.key()).length === 0){
-      var html = element_head 
-        + entry_head 
-        + date_head + entry.date + date_foot
-        + content_head
-        + marked(entry.content)
-        + content_foot
-        + entry_foot 
-        + element_foot;
-          
-      $("#plusbutton").after(html).next().attr("id", snapshot.key());
-    }
+    add_entry(snapshot.key(), entry.content, entry.date);
   }); 
 };
 
@@ -73,8 +91,8 @@ jQuery.fn.extend({
     if (date === undefined){
       date = new Date().toISOString().slice(0,10);
     }
+    var entry_id = parseInt($(this).parent().parent().attr("id"));
     if ($.trim(content)!==""){
-        var entry_id = parseInt($(this).parent().parent().attr("id"));
         var date_html = date_head + date + date_foot;
         $(this).replaceWith(entry_head 
           + date_html 
@@ -85,6 +103,7 @@ jQuery.fn.extend({
         store(entry_id, date, content);
       } else {
         $(this).parent().parent().remove();
+        remove(entry_id);
       }
     $("#plusbutton").show();
   }
@@ -100,7 +119,6 @@ $(document).ready(function(){
         $('#conf-modal').modal();
         $("#errordisplay").hide();
       });
-      //not logged in, local only
     } else {
       $("#login-button").html(logout_button).off( "click" ).click(function(){
         fb.unauth();
@@ -126,13 +144,8 @@ $(document).ready(function(){
   $("body").on("click", ".teaser", function(){
     var teaser = $(this);
     var id = teaser.parents(".row").attr("id");
-    fb_user.child("entries").child(id).once("value", function(snapshot){
-      var entry = snapshot.val();
-      teaser.replaceWith(date_head + entry.date + date_foot
-          + content_head 
-          + marked(entry.content) 
-          + content_foot);
-    });
+    replace_with_entry(teaser, id);
+    
   });
   
   
