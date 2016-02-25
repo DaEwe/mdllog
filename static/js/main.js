@@ -13,16 +13,17 @@ var entry_foot = '</div>';
 var login_button = '<span class="glyphicon glyphicon-log-in" aria-hidden="true">';
 var logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
 
-var id = 0;
-var entry_db = {};
+var id;
+
 var fb;
 var fb_user;
 
 var store = function(id, date, content){
   if (fb_user === undefined){
-    //store only locally
+    localStorage.setItem("id::" + id, JSON.stringify({"date": date, "content": content}));
+    id++;
+    localStorage.setItem("id", id);
   } else {
-    
     fb_user.child("entries").child(id).set({"date": date, "content": content});
     id++;
     fb_user.child("id").set(id);
@@ -30,12 +31,17 @@ var store = function(id, date, content){
 };
 
 var remove = function(id){
-  fb_user.child("entries").child(id).remove();
+  if (fb_user === undefined){
+    localStorage.removeItem("id::" + id);
+  } else {
+    fb_user.child("entries").child(id).remove();
+  }
 };
 
 var fill_source = function(id){
   if (fb_user === undefined){
-    //fetch locally
+    var entry = JSON.parse(localStorage.getItem("id::" + id));
+    $("#editor").focus().val(entry.content);
   } else {
    fb_user.child("entries").child(id).once("value", function(snapshot){
       var entry = snapshot.val();
@@ -45,20 +51,28 @@ var fill_source = function(id){
 };
 
 var replace_with_entry = function(dom,id){
+  if (fb_user === undefined){
+    var entry = JSON.parse(localStorage.getItem("id::" + id));
+    dom.replaceWith(date_head + entry.date.slice(0,10) + date_foot
+        + content_head 
+        + marked(entry.content) 
+        + content_foot);
+  } else {
   fb_user.child("entries").child(id).once("value", function(snapshot){
       var entry = snapshot.val();
-      dom.replaceWith(date_head + entry.date + date_foot
+      dom.replaceWith(date_head + entry.date.slice(0,10) + date_foot
           + content_head 
           + marked(entry.content) 
           + content_foot);
     });
+  }
 };
 
 var add_entry = function(id, content, date){
   if ($("#" + id).length === 0){
       var html = element_head 
         + entry_head 
-        + date_head + date + date_foot
+        + date_head + date.slice(0,10) + date_foot
         + content_head
         + marked(content)
         + content_foot
@@ -89,11 +103,11 @@ jQuery.fn.extend({
       content = $(this).val();
     }
     if (date === undefined){
-      date = new Date().toISOString().slice(0,10);
+      date = new Date().toISOString();
     }
     var entry_id = parseInt($(this).parent().parent().attr("id"));
     if ($.trim(content)!==""){
-        var date_html = date_head + date + date_foot;
+        var date_html = date_head + date.slice(0,10) + date_foot;
         $(this).replaceWith(entry_head 
           + date_html 
           + content_head 
@@ -115,10 +129,25 @@ $(document).ready(function(){
   fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
   fb.onAuth(function(authData){
     if (authData === null) {
+      // configure button to open modal for login/signup
       $("#login-button").html(login_button).off( "click" ).click(function(){
         $('#conf-modal').modal();
         $("#errordisplay").hide();
       });
+      
+      //fetch data locally
+      id = localStorage.getItem("id");
+      if (id === null) {
+        id = 0;
+      }
+      for (var i = 0; i < localStorage.length; i++){
+        var key = localStorage.key(i);
+        if (key.startsWith("id::")){
+          var entry = JSON.parse(localStorage.getItem(key));
+          add_entry(key.slice(4), entry.content, entry.date);
+        }
+}
+      
     } else {
       $("#login-button").html(logout_button).off( "click" ).click(function(){
         fb.unauth();
