@@ -217,16 +217,21 @@ $(document).ready(function(){
     $(this).markify();
   }); 
   
-  $("body").on('change keyup paste',"#editor", function(e) {
-    console.log("key");
-    var content = $(this).val();
-    if (e.keyCode == 27) {
-      $(this).blur(); //triggers focusout
-    } else if (content.endsWith("\n\n\n")){
-      $(this).val(content.slice(0,-3));
-      $(this).blur(); //triggers focusout
-    }
-});
+  (function() {
+    var cnt_enter = 0;
+    $("body").on('change keyup paste',"#editor", function(e) {
+
+      if (e.keyCode == 13){
+        cnt_enter++;
+      } else {
+        cnt_enter = 0;
+      }
+      if (e.keyCode == 27 || cnt_enter == 3) {
+        $(this).blur(); //triggers focusout
+      }
+  
+    });
+  })();
  
 });
 }());
