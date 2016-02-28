@@ -82,7 +82,16 @@ var initialize = function(authData){
   fb_user.child("entries").on('child_added', function(snapshot) {
     var entry = snapshot.val();
     add_entry(snapshot.key(), entry.content, entry.date);
-  }); 
+  });
+  
+  for (var i = 0; i < localStorage.length; i++){
+        var key = localStorage.key(i);
+        if (key.startsWith("id::")){
+          var entry = JSON.parse(localStorage.getItem(key));
+          store(key.slice(4), entry.content, entry.date);
+          localStorage.removeItem(key);
+        }
+  }
 };
 
 
