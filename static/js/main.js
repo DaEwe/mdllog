@@ -1,14 +1,7 @@
-var editor_head = '<textarea id="editor" class="form-control" rows=8>';
-var editor_foot = '</textarea>';
-var editor_html = editor_head + editor_foot;
-var element_head = '<div class="row"><div class="col-md-8 col-md-offset-2">';
-var element_foot = '</div></div>';
-var date_head = '<div class="text-right date"><small>';
-var date_foot = '</small></div>';
-var content_head = '<div class="content">';
-var content_foot = '</div>';
-var entry_head = '<div class="entry">';
-var entry_foot = '</div>';
+var editor_tmpl;
+var element_tmpl;
+var entry_tmpl;
+
 
 var login_button = '<span class="glyphicon glyphicon-log-in" aria-hidden="true">';
 var logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
@@ -53,33 +46,28 @@ var fill_source = function(id){
 var replace_with_entry = function(dom,id){
   if (fb_user === undefined){
     var entry = JSON.parse(localStorage.getItem("id::" + id));
-    dom.replaceWith(date_head + entry.date.slice(0,10) + date_foot
-        + content_head 
-        + marked(entry.content) 
-        + content_foot);
+    dom.replaceWith(Mustache.render(
+      entry_tmpl,
+      {date: entry.date.slice(0,10), content: marked(entry.content)}
+    ));
   } else {
-  fb_user.child("entries").child(id).once("value", function(snapshot){
+    fb_user.child("entries").child(id).once("value", function(snapshot){
       var entry = snapshot.val();
-      dom.replaceWith(date_head + entry.date.slice(0,10) + date_foot
-          + content_head 
-          + marked(entry.content) 
-          + content_foot);
+      dom.replaceWith(Mustache.render(
+      entry_tmpl,
+      {date: entry.date.slice(0,10), content: marked(entry.content)}
+    ));
     });
   }
 };
 
 var add_entry = function(id, content, date){
   if ($("#" + id).length === 0){
-      var html = element_head 
-        + entry_head 
-        + date_head + date.slice(0,10) + date_foot
-        + content_head
-        + marked(content)
-        + content_foot
-        + entry_foot 
-        + element_foot;
-          
-      $("#plusbutton").after(html).next().attr("id", id);
+    $("#plusbutton").after(Mustache.render(
+      element_tmpl,
+      {content: marked(content), date: date.slice(0,10), id:id},
+      {inner: entry_tmpl}
+    ));
     }
 };
 
@@ -107,13 +95,10 @@ jQuery.fn.extend({
     }
     var entry_id = parseInt($(this).parent().parent().attr("id"));
     if ($.trim(content)!==""){
-        var date_html = date_head + date.slice(0,10) + date_foot;
-        $(this).replaceWith(entry_head 
-          + date_html 
-          + content_head 
-          + marked(content) 
-          + content_foot 
-          + entry_foot);
+        $(this).replaceWith(Mustache.render(
+          entry_tmpl,
+          {date: date.slice(0,10),content: marked(content)}
+        ));
         store(entry_id, date, content);
       } else {
         $(this).parent().parent().remove();
@@ -125,6 +110,12 @@ jQuery.fn.extend({
 
 
 $(document).ready(function(){
+  editor_tmpl = $('#editor-template').html();
+  element_tmpl = $('#element-template').html();
+  entry_tmpl = $('#entry-template').html();
+  Mustache.parse(editor_tmpl);
+  Mustache.parse(element_tmpl);
+  Mustache.parse(entry_tmpl);
   
   fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
   fb.onAuth(function(authData){
@@ -209,7 +200,7 @@ $(document).ready(function(){
   
   
   $("#plusbutton").click(function(){
-    $(this).after(element_head + editor_html + element_foot).next().attr("id", id);
+    $(this).after(Mustache.render(element_tmpl,{id: id},{inner: editor_tmpl}));
     $(this).hide();
     $("#editor").focus();
   });
@@ -217,7 +208,7 @@ $(document).ready(function(){
   $("body").on("dblclick", ".entry", function(){
     $("#plusbutton").hide();
     var entry_id = $(this).parent().parent().attr("id");
-    $(this).replaceWith(editor_html);
+    $(this).replaceWith(Mustache.render(editor_tmpl));
     fill_source(entry_id);
   });
 
@@ -227,6 +218,7 @@ $(document).ready(function(){
   }); 
   
   $("body").on('change keyup paste',"#editor", function(e) {
+    console.log("key");
     var content = $(this).val();
     if (e.keyCode == 27) {
       $(this).blur(); //triggers focusout
