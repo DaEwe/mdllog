@@ -10,20 +10,21 @@ var entry_tmpl;
 var login_button = '<span class="glyphicon glyphicon-log-in" aria-hidden="true">';
 var logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
 
-var id;
-
 var fb;
 var fb_user;
+
+var guuid = function(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+};
 
 var store = function(id, date, content){
   if (fb_user === undefined){
     localStorage.setItem("id::" + id, JSON.stringify({"date": date, "content": content}));
-    id++;
-    localStorage.setItem("id", id);
   } else {
     fb_user.child("entries").child(id).set({"date": date, "content": content});
-    id++;
-    fb_user.child("id").set(id);
   }
 };
 
@@ -69,7 +70,7 @@ var add_entry = function(id, content, date){
   if ($("#" + id).length === 0){
     $("#plusbutton").after(Mustache.render(
       element_tmpl,
-      {content: marked(content), date: date.slice(0,10), id:id},
+      {content: marked(content), date: date.slice(0,10), id: id},
       {inner: entry_tmpl}
     ));
     }
@@ -78,10 +79,6 @@ var add_entry = function(id, content, date){
 var initialize = function(authData){
   fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
   
-  fb_user.child("id").on("value", function(snapshot){
-    id = snapshot.val();
-  });
-
   fb_user.child("entries").on('child_added', function(snapshot) {
     var entry = snapshot.val();
     add_entry(snapshot.key(), entry.content, entry.date);
@@ -97,7 +94,7 @@ jQuery.fn.extend({
     if (date === undefined){
       date = new Date().toISOString();
     }
-    var entry_id = parseInt($(this).parent().parent().attr("id"));
+    var entry_id = $(this).parent().parent().attr("id");
     if ($.trim(content)!==""){
         $(this).replaceWith(Mustache.render(
           entry_tmpl,
@@ -130,11 +127,7 @@ $(document).ready(function(){
         $("#errordisplay").hide();
       });
       
-      //fetch data locally
-      id = localStorage.getItem("id");
-      if (id === null) {
-        id = 0;
-      }
+
       for (var i = 0; i < localStorage.length; i++){
         var key = localStorage.key(i);
         if (key.startsWith("id::")){
@@ -204,7 +197,10 @@ $(document).ready(function(){
   
   
   $("#plusbutton").click(function(){
-    $(this).after(Mustache.render(element_tmpl,{id: id},{inner: editor_tmpl}));
+
+    $(this).after(
+      Mustache.render(element_tmpl,{id: guuid()},{inner: editor_tmpl})
+    );
     $(this).hide();
     $("#editor").focus();
   });
