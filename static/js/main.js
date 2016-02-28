@@ -1,3 +1,7 @@
+(function () {
+   'use strict';
+
+
 var editor_tmpl;
 var element_tmpl;
 var entry_tmpl;
@@ -229,3 +233,4 @@ $(document).ready(function(){
 });
  
 });
+}());
