@@ -68,7 +68,7 @@ var replace_with_entry = function(dom,id){
 
 var add_entry = function(id, content, date){
   if ($("#" + id).length === 0){
-    $("#plusbutton").after(Mustache.render(
+    $("#elements-container").prepend(Mustache.render(
       element_tmpl,
       {content: marked(content), date: date.slice(0,10), id: id},
       {inner: entry_tmpl}
@@ -114,7 +114,6 @@ jQuery.fn.extend({
         $(this).parent().parent().remove();
         remove(entry_id);
       }
-    $("#plusbutton").show();
   }
 });
 
@@ -148,7 +147,7 @@ $(document).ready(function(){
     } else {
       $("#login-button").html(logout_button).off( "click" ).click(function(){
         fb.unauth();
-        $("#plusbutton").siblings().remove();
+        $("#elements-container").children().remove();
       });
       initialize(authData);
     }
@@ -205,17 +204,16 @@ $(document).ready(function(){
   });
   
   
-  $("#plusbutton").click(function(){
+  
+  $("#plus-button").click(function(){
 
-    $(this).after(
+    $("#elements-container").prepend(
       Mustache.render(element_tmpl,{id: guuid()},{inner: editor_tmpl})
     );
-    $(this).hide();
     $("#editor").focus();
   });
   
   $("body").on("dblclick", ".entry", function(){
-    $("#plusbutton").hide();
     var entry_id = $(this).parent().parent().attr("id");
     $(this).replaceWith(Mustache.render(editor_tmpl));
     fill_source(entry_id);
@@ -238,7 +236,6 @@ $(document).ready(function(){
       if (e.keyCode == 27 || cnt_enter == 3) {
         $(this).blur(); //triggers focusout
       }
-  
     });
   })();
  
