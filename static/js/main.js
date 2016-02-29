@@ -88,7 +88,7 @@ var initialize = function(authData){
         var key = localStorage.key(i);
         if (key.startsWith("id::")){
           var entry = JSON.parse(localStorage.getItem(key));
-          store(key.slice(4), entry.content, entry.date);
+          store(key.slice(4), entry.date, entry.content);
           localStorage.removeItem(key);
         }
   }
