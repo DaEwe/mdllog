@@ -105,15 +105,16 @@ jQuery.fn.extend({
     }
     var entry_id = $(this).parent().parent().attr("id");
     if ($.trim(content)!==""){
-        $(this).replaceWith(Mustache.render(
-          entry_tmpl,
-          {date: date.slice(0,10),content: marked(content)}
-        ));
-        store(entry_id, date, content);
-      } else {
-        $(this).parent().parent().remove();
-        remove(entry_id);
-      }
+      $(this).replaceWith(Mustache.render(
+        entry_tmpl,
+        {date: date.slice(0,10),content: marked(content)}
+      ));
+      store(entry_id, date, content);
+    } else {
+      $(this).parent().parent().remove();
+      remove(entry_id);
+    }
+    $("#plus-button").focus();
   }
 });
 
@@ -127,6 +128,9 @@ $(document).ready(function(){
   Mustache.parse(entry_tmpl);
   
   fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
+  
+  $("#plus-button").focus();
+  
   fb.onAuth(function(authData){
     if (authData === null) {
       // configure button to open modal for login/signup
@@ -222,7 +226,7 @@ $(document).ready(function(){
 
   $("body").on('focusout','#editor', function(){
     $(this).markify();
-  }); 
+  });
   
   (function() {
     var cnt_enter = 0;

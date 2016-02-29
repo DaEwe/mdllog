@@ -1,12 +1,5 @@
-.plusbutton{
-  border: 2px;
-  border-style: dashed;
-  border-radius: 5px;
-  margin-bottom: 5px;
-}
-
-.plusbutton:hover{
-  background-color: #e6e6e6;
+.btn:focus {
+  outline: none;
 }
 
 .entry{
