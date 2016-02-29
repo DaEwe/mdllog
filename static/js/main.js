@@ -79,7 +79,7 @@ var add_entry = function(id, content, date){
 var initialize = function(authData){
   fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
   
-  fb_user.child("entries").on('child_added', function(snapshot) {
+  fb_user.child("entries").orderByChild("date").on('child_added', function(snapshot) {
     var entry = snapshot.val();
     add_entry(snapshot.key(), entry.content, entry.date);
   });
