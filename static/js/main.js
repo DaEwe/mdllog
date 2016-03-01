@@ -6,9 +6,10 @@
 	var element_tmpl;
 	var entry_tmpl;
 
+	const DB_URL = 'https://fiery-heat-9174.firebaseio.com';
 
-	var login_button = '<span class="glyphicon glyphicon-log-in" aria-hidden="true">';
-	var logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
+	const login_button = '<span class="glyphicon glyphicon-log-in" aria-hidden="true">';
+	const logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
 
 	var fb;
 	var fb_user;
@@ -94,13 +95,13 @@
 
 	var initialize = function(authData){
 		fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
-		
+
 		fb_user.child("entries").orderByChild("date").on('child_added', function(snapshot) {
 			var entry = snapshot.val();
 			add_entry(snapshot.key(), entry.content, entry.date);
 			mark_entry_synced(snapshot.key());
 		});
-		
+
 		for (var i = 0; i < localStorage.length; i++){
 			var key = localStorage.key(i);
 			if (key.startsWith("id::")){
@@ -143,11 +144,11 @@
 		Mustache.parse(editor_tmpl);
 		Mustache.parse(element_tmpl);
 		Mustache.parse(entry_tmpl);
-		
-		fb = new Firebase('https://fiery-heat-9174.firebaseio.com');
-		
+
+		fb = new Firebase(DB_URL);
+
 		$("#plus-button").focus();
-		
+
 		fb.onAuth(function(authData){
 			if (authData === null) {
 			// configure button to open modal for login/signup
