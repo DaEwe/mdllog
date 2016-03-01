@@ -22,7 +22,7 @@
 	};
 
 	var store = function(id, date, content){
-		if (fb_user === undefined){
+		if (!fb_user){
 			localStorage.setItem("id::" + id, JSON.stringify({"date": date, "content": content}));
 		} else {
 			fb_user.child("entries").child(id).set(
@@ -37,7 +37,7 @@
 	};
 
 	var remove = function(id){
-		if (fb_user === undefined){
+		if (!fb_user){
 			localStorage.removeItem("id::" + id);
 		} else {
 			fb_user.child("entries").child(id).remove();
@@ -45,7 +45,7 @@
 	};
 
 	var fill_source = function(id){
-		if (fb_user === undefined){
+		if (!fb_user){
 			var entry = JSON.parse(localStorage.getItem("id::" + id));
 			$("#editor").focus().val(entry.content);
 		} else {
@@ -57,7 +57,7 @@
 	};
 
 	var replace_with_entry = function(dom,id){
-		if (fb_user === undefined){
+		if (!fb_user){
 			var entry = JSON.parse(localStorage.getItem("id::" + id));
 			dom.replaceWith(Mustache.render(
 				entry_tmpl,
@@ -171,11 +171,12 @@
 			$("#login-button").html(logout_button).off( "click" ).click(function(){
 				fb.unauth();
 				$("#elements-container").children().remove();
+				fb_user = null;
 			});
 			initialize(authData);
 		}
 	});
-		
+
 		$("#list-button").click(function(){
 			$(".entry").each(function(){
 				if ($(this).find(".teaser").length === 0){
@@ -188,15 +189,15 @@
 			});
 			return false;
 		});
-		
+
 		$("body").on("click", ".teaser", function(){
 			var teaser = $(this);
 			var id = teaser.parents(".row").attr("id");
-			replace_with_entry(teaser, id);
-			
+			replace_with_entry(teaser.parent(), id);
+
 		});
-		
-		
+
+
 		$("#signupbutton").click(function(){
 			fb.createUser({
 				email    : $("#emailinput").val(),
@@ -210,7 +211,7 @@
 			});
 			return false;
 		});
-		
+
 		$("#loginbutton").click(function(){
 			fb.authWithPassword({
 				email    : $("#emailinput").val(),
@@ -225,9 +226,9 @@
 			});
 			return false;
 		});
-		
-		
-		
+
+
+
 		$("#plus-button").click(function(){
 
 			$("#elements-container").prepend(
@@ -235,7 +236,7 @@
 				);
 			$("#editor").focus();
 		});
-		
+
 		$("body").on("dblclick", ".entry", function(){
 			var entry_id = $(this).parent().parent().attr("id");
 			$(this).replaceWith(Mustache.render(editor_tmpl));
@@ -246,7 +247,7 @@
 		$("body").on('focusout','#editor', function(){
 			$(this).markify();
 		});
-		
+
 		(function() {
 			var cnt_enter = 0;
 			$("body").on('change keyup paste',"#editor", function(e) {
