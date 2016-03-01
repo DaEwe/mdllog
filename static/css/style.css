@@ -1,16 +1,21 @@
 .btn:focus {
-  outline: none;
+	outline: none;
 }
 
 .entry{
-  padding: 5px;
-  margin-bottom: 20px;
+	padding: 5px;
+	margin-bottom: 20px;
+}
+
+span.synced {
+	color: lime;
 }
 
 .teaser{
-  cursor: pointer;
+	cursor: pointer;
 }
 
 div.date + h1{
-  margin-top: 0px;
+	margin-top: 0px;
 }
+
