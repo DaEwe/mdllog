@@ -28,8 +28,8 @@
 			fb_user.child("entries").child(id).set(
 				{"date": date, "content": content},
 				function(error){
-					if (!error){
-						mark_entry_synced(id);
+					if (error){
+						console.error("could not store entry");
 					}
 				}
 				);
@@ -37,6 +37,7 @@
 	};
 
 	var remove = function(id){
+		console.log("removing item " + id);
 		if (!fb_user){
 			localStorage.removeItem("id::" + id);
 		} else {
@@ -97,8 +98,14 @@
 		fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
 
 		fb_user.child("entries").orderByChild("date").on('child_added', function(snapshot) {
+			console.log("adding entry " + snapshot.key());
 			var entry = snapshot.val();
 			add_entry(snapshot.key(), entry.content, entry.date);
+			mark_entry_synced(snapshot.key());
+		});
+
+		fb_user.child("entries").on('child_changed', function(snapshot) {
+			console.log("changed entry " + snapshot.key());
 			mark_entry_synced(snapshot.key());
 		});
 
@@ -220,7 +227,7 @@
 				if (error) {
 					$("#errordisplay").show().children("div").text(error);
 				} else {
-					initialize(authData);
+					//initialize(authData);
 					$('#conf-modal').modal("hide");
 				}
 			});
