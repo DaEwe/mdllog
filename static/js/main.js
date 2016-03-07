@@ -207,12 +207,15 @@
 				email    : $("#emailinput").val(),
 				password : $("#passwordinput").val()
 			}, function(error, userData) {
+				$("#wait-login").remove();
 				if (error) {
 					$("#errordisplay").show().children("div").text(error);
 				} else {
+					alert("User creation successfull, please login.");
 					$('#conf-modal').modal("hide");
 				}
 			});
+			$(this).after("<img class='loader-pic' id='wait-login' src='static/pics/ajax-loader.gif'></img>");
 			return false;
 		});
 
