@@ -37,7 +37,6 @@
 	};
 
 	var remove = function(id){
-		console.log("removing item " + id);
 		if (!fb_user){
 			localStorage.removeItem("id::" + id);
 		} else {
@@ -98,14 +97,12 @@
 		fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
 
 		fb_user.child("entries").orderByChild("date").on('child_added', function(snapshot) {
-			console.log("adding entry " + snapshot.key());
 			var entry = snapshot.val();
 			add_entry(snapshot.key(), entry.content, entry.date);
 			mark_entry_synced(snapshot.key());
 		});
 
 		fb_user.child("entries").on('child_changed', function(snapshot) {
-			console.log("changed entry " + snapshot.key());
 			mark_entry_synced(snapshot.key());
 		});
 
@@ -224,13 +221,14 @@
 				email    : $("#emailinput").val(),
 				password : $("#passwordinput").val()
 			}, function(error, authData) {
+				$("#wait-login").remove();
 				if (error) {
 					$("#errordisplay").show().children("div").text(error);
 				} else {
-					//initialize(authData);
 					$('#conf-modal').modal("hide");
 				}
 			});
+			$(this).next().after("<img class='loader-pic' id='wait-login' src='static/pics/ajax-loader.gif'></img>");
 			return false;
 		});
 

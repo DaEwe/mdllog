@@ -7,6 +7,10 @@
 	margin-bottom: 20px;
 }
 
+.loader-pic {
+	margin-left: 10px;
+}
+
 span.synced {
 	color: lime;
 }
