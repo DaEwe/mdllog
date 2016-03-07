@@ -41,6 +41,11 @@
 							<span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
 						</a>
 					</li>
+					<li>
+						<a href="#help" role="button" class="btn btn-default navbar-btn" id="help-button">
+							<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+						</a>
+					</li>
 				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
@@ -73,6 +78,32 @@
 							<div class="alert alert-danger" role="alert" > baaaad!</div>
 						</div>
 					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="help-modal" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="modal-label">Help</h4>
+				</div>
+				<div class="modal-body">
+				<h5>Controls</h5>
+				<dl class="dl-horizontal">
+  				<dt>add an entry</dt>
+  				<dd>Press plus button</dd>
+  				<dt>close editor</dt>
+  				<dd>3x enter, or esc, or click outside of editor area</dd>
+  				<dt>edit an entry</dt>
+  				<dd>double click on entry</dd>
+  				<dt>delete an entry</dt>
+  				<dd>double click, remove content, close</dd>
+				</dl>
+				<h5>Formatting</h5>
+				MDLLog relies on Markdown. For infos on markdown look  <a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet" target="_blank">here</a>
 				</div>
 			</div>
 		</div>

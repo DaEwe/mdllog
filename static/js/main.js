@@ -181,6 +181,10 @@
 		}
 	});
 
+		$("#help-button").click(function(){
+			$('#help-modal').modal();
+		});
+
 		$("#list-button").click(function(){
 			$(".entry").each(function(){
 				if ($(this).find(".teaser").length === 0){
