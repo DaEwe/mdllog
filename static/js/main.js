@@ -159,6 +159,7 @@
 			$("#login-button").html(login_button).off( "click" ).click(function(){
 				$('#conf-modal').modal();
 				$("#errordisplay").hide();
+				return false;
 			});
 			
 
@@ -176,6 +177,7 @@
 				fb.unauth();
 				$("#elements-container").children().remove();
 				fb_user = null;
+				return false;
 			});
 			initialize(authData);
 		}
@@ -183,6 +185,7 @@
 
 		$("#help-button").click(function(){
 			$('#help-modal').modal();
+			return false;
 		});
 
 		$("#list-button").click(function(){
@@ -247,6 +250,7 @@
 				Mustache.render(element_tmpl,{id: guuid()},{inner: editor_tmpl})
 				);
 			$("#editor").focus();
+			return false;
 		});
 
 		$("body").on("dblclick", ".entry", function(){
