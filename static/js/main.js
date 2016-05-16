@@ -218,7 +218,7 @@
 				if (error) {
 					$("#errordisplay").show().children("div").text(error);
 				} else {
-					alert("User creation successfull, please login.");
+					alert("User creation successful, please login.");
 					$('#conf-modal').modal("hide");
 				}
 			});
@@ -253,7 +253,7 @@
 			return false;
 		});
 
-		$("body").on("dblclick", ".entry", function(){
+		$("body").on("dblclick tab", ".entry", function(){
 			var entry_id = $(this).parent().parent().attr("id");
 			$(this).replaceWith(Mustache.render(editor_tmpl));
 			fill_source(entry_id);
