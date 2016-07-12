@@ -12,7 +12,8 @@
 	const logout_button = '<span class="glyphicon glyphicon-log-out" aria-hidden="true">';
 
 	var fb;
-	var fb_user;
+	var fb_user; 
+	var auth;
 
 	var guuid = function(){
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -25,7 +26,7 @@
 		if (!fb_user){
 			localStorage.setItem("id::" + id, JSON.stringify({"date": date, "content": content}));
 		} else {
-			fb_user.child("entries").child(id).set(
+			fb_user.child(id).set(
 				{"date": date, "content": content},
 				function(error){
 					if (error){
@@ -40,7 +41,7 @@
 		if (!fb_user){
 			localStorage.removeItem("id::" + id);
 		} else {
-			fb_user.child("entries").child(id).remove();
+			fb_user.child(id).remove();
 		}
 	};
 
@@ -49,7 +50,7 @@
 			var entry = JSON.parse(localStorage.getItem("id::" + id));
 			$("#editor").focus().val(entry.content);
 		} else {
-			fb_user.child("entries").child(id).once("value", function(snapshot){
+			fb_user.child(id).once("value", function(snapshot){
 				var entry = snapshot.val();
 				$("#editor").focus().val(entry.content);
 			});
@@ -64,7 +65,7 @@
 				{date: entry.date.slice(0,10), content: marked(entry.content)}
 				));
 		} else {
-			fb_user.child("entries").child(id).once("value", function(snapshot){
+			fb_user.child(id).once("value", function(snapshot){
 				var entry = snapshot.val();
 				dom.replaceWith(Mustache.render(
 					entry_tmpl,
@@ -94,16 +95,17 @@
 	}
 
 	var initialize = function(authData){
-		fb_user = new Firebase('https://fiery-heat-9174.firebaseio.com/users/'+ authData.uid);
+		// Initialize Firebase
+		fb_user = firebase.database().ref("users/" + authData.uid + "/entries");
 
-		fb_user.child("entries").orderByChild("date").on('child_added', function(snapshot) {
+		fb_user.orderByChild("date").on('child_added', function(snapshot) {
 			var entry = snapshot.val();
-			add_entry(snapshot.key(), entry.content, entry.date);
-			mark_entry_synced(snapshot.key());
+			add_entry(snapshot.key, entry.content, entry.date);
+			mark_entry_synced(snapshot.key);
 		});
 
-		fb_user.child("entries").on('child_changed', function(snapshot) {
-			mark_entry_synced(snapshot.key());
+		fb_user.on('child_changed', function(snapshot) {
+			mark_entry_synced(snapshot.key);
 		});
 
 		for (var i = 0; i < localStorage.length; i++){
@@ -149,12 +151,23 @@
 		Mustache.parse(element_tmpl);
 		Mustache.parse(entry_tmpl);
 
-		fb = new Firebase(DB_URL);
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyB7j0dvSeJT85qPU0PM6RY55clGRXPhvyk",
+			authDomain: "fiery-heat-9174.firebaseapp.com",
+			databaseURL: "https://fiery-heat-9174.firebaseio.com",
+			storageBucket: "fiery-heat-9174.appspot.com",
+		};
+		firebase.initializeApp(config);
+
+		fb = firebase.database().ref();
+		auth = firebase.auth();
 
 		$("#plus-button").focus();
 
-		fb.onAuth(function(authData){
+		auth.onAuthStateChanged(function(authData){
 			if (authData === null) {
+				console.log("we don't know any user yet");
 			// configure button to open modal for login/signup
 			$("#login-button").html(login_button).off( "click" ).click(function(){
 				$('#conf-modal').modal();
@@ -174,7 +187,7 @@
 			
 		} else {
 			$("#login-button").html(logout_button).off( "click" ).click(function(){
-				fb.unauth();
+				auth.signOut();
 				$("#elements-container").children().remove();
 				fb_user = null;
 				return false;
@@ -210,33 +223,30 @@
 
 
 		$("#signupbutton").click(function(){
-			fb.createUser({
-				email    : $("#emailinput").val(),
-				password : $("#passwordinput").val()
-			}, function(error, userData) {
+			auth.createUserWithEmailAndPassword($("#emailinput").val(), $("#passwordinput").val()).then(function(result){
 				$("#wait-login").remove();
-				if (error) {
-					$("#errordisplay").show().children("div").text(error);
-				} else {
-					alert("User creation successful, please login.");
-					$('#conf-modal').modal("hide");
-				}
+				alert("User creation successful, please login.");
+				$('#conf-modal').modal("hide");
+			}).catch(function(error){
+				$("#wait-login").remove();
+				$("#errordisplay").show().children("div").text(error);
 			});
+			
 			$(this).after("<img class='loader-pic' id='wait-login' src='static/pics/ajax-loader.gif'></img>");
+			
 			return false;
+
 		});
 
 		$("#loginbutton").click(function(){
-			fb.authWithPassword({
-				email    : $("#emailinput").val(),
-				password : $("#passwordinput").val()
-			}, function(error, authData) {
+			auth.signInWithEmailAndPassword($("#emailinput").val(), $("#passwordinput").val()).then(function(result){
+				//login successfull	
 				$("#wait-login").remove();
-				if (error) {
-					$("#errordisplay").show().children("div").text(error);
-				} else {
-					$('#conf-modal').modal("hide");
-				}
+				$('#conf-modal').modal("hide");
+			}).catch(function(error) {
+				$("#wait-login").remove();
+				$("#errordisplay").show().children("div").text(error);
+				
 			});
 			$(this).next().after("<img class='loader-pic' id='wait-login' src='static/pics/ajax-loader.gif'></img>");
 			return false;
